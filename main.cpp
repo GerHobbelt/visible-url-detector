@@ -17,7 +17,7 @@ class InputArgs
 	bool m_isDebug;
 	int  m_sliceInterval;
 public:
-	InputArgs(int argc, char** argv)
+	InputArgs(int argc, const char** argv)
 		:m_isSafe(false),
 		m_isDebug(false),
 		m_sliceInterval(1)
@@ -66,12 +66,12 @@ public:
 };
 
 
-int main(int argc, char** argv)
+int main(int argc, const char** argv)
 {
 	if (FAILED(CoInitialize(NULL)))
 	{
 		std::wcout << L"CoInitialize FAILED!" << std::endl;
-		return -1;
+		return EXIT_FAILURE;
 	}
 
 	InputArgs inputParams(argc, argv);
@@ -80,9 +80,10 @@ int main(int argc, char** argv)
 	if (FAILED(uia.CoCreateInstance(CLSID_CUIAutomation)) || !uia)
 	{
 		std::wcout << L"UI Automation not created!" << std::endl;
-		return -1;
+		return EXIT_FAILURE;
 	}
 
+	int rv = EXIT_SUCCESS;
 	while (true)
 	{
 		try {
@@ -105,6 +106,7 @@ int main(int argc, char** argv)
 			{
 				std::wcout << "Error: " << err.message() << " on: " << err.file() << " " << err.function() << " " << err.line() << std::endl;
 			}
+			rv = EXIT_FAILURE;
 		}
 		catch(...)
 		{
@@ -112,9 +114,10 @@ int main(int argc, char** argv)
 			{
 				std::wcout << "Unknown Error!" << std::endl;
 			}
+			rv = EXIT_FAILURE;
 		}
 		Sleep(inputParams.sliceInterval() * 1000);
 	}
 	CoUninitialize();
-	return 0;
+	return rv;
 }
